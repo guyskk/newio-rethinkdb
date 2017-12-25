@@ -25,9 +25,31 @@ pip install curethinkdb
 
 ## Document
 
-TODO
+### connect, run
+
+Just call them as coroutine `await xxx()`.
+
+### reql
+
+Not Support.
+
+### ConnectionPool
+
+```python
+from curio import run
+from curethinkdb import ConnectionPool, r, set_loop_type_curio
+
+async def main()
+    pool = ConnectionPool(host='127.0.0.1', port=28015)
+    conn = await pool.get()
+    ret = await r.db("test").table_list().run(conn)
+    await pool.put(conn)
+
+set_loop_type_curio()
+run(main)
+```
 
 ## Need Help? Contributing?
 
 - Open issues for any Questions/Bugs/Features
-- Pull Request are welcome
+- Pull Requests are welcome

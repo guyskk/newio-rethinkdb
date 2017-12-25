@@ -1,23 +1,3 @@
-import struct
-import logging
-
-from curio import socket
-from curio.queue import Queue
-
-from rethinkdb.net import pQuery as QueryType
-from rethinkdb.net import pResponse as ResponseType
-from rethinkdb.handshake import HandshakeV1_0
-from rethinkdb.errors import (ReqlAuthError, ReqlTimeoutError, ReqlDriverError,
-                              ReqlServerCompileError, ReqlRuntimeError)
-from rethinkdb.ast import DB, ReQLDecoder, ReQLEncoder, expr
-from rethinkdb.ast import Insert, Update, Replace, Delete
-from .errors import ReqlProgrammingError
-
-
-__all__ = ('Connection', 'CurioCursor')
-
-logger = logging.getLogger(__name__)
-
 """
 SocketWrapper:
     - read_until
@@ -36,7 +16,30 @@ Connection:
 Cursor:
     - __aiter__
     - next
+    - to_list
 """
+import struct
+import logging
+
+from curio import socket
+from curio.queue import Queue
+from rethinkdb import r
+from rethinkdb.net import pQuery as QueryType
+from rethinkdb.net import pResponse as ResponseType
+from rethinkdb.handshake import HandshakeV1_0
+from rethinkdb.errors import (
+    ReqlAuthError, ReqlTimeoutError, ReqlDriverError,
+    ReqlServerCompileError, ReqlRuntimeError,
+)
+from rethinkdb.ast import DB, ReQLDecoder, ReQLEncoder, expr
+from rethinkdb.ast import Insert, Update, Replace, Delete
+
+from .errors import ReqlProgrammingError
+
+
+__all__ = ('Connection', 'CurioCursor')
+
+logger = logging.getLogger(__name__)
 
 
 def _get_consts(t):
@@ -84,11 +87,11 @@ class Response:
     def __init__(self, token, data, json_decoder):
         self.token = token
         full_response = json_decoder.decode(data.decode('utf-8'))
-        self.type = full_response["t"]
-        self.data = full_response["r"]
-        self.backtrace = full_response.get("b", None)
-        self.profile = full_response.get("p", None)
-        self.note_type = full_response.get("n", None)
+        self.type = full_response['t']
+        self.data = full_response['r']
+        self.backtrace = full_response.get('b', None)
+        self.profile = full_response.get('p', None)
+        self.note_type = full_response.get('n', None)
 
     def __repr__(self):
         type_name = _RESPONSE_TYPE_NAMES.get(self.type, self.type)
@@ -193,10 +196,10 @@ class SocketWrapper:
 
     async def read_response(self, query):
         headers = await self.read_bytes(12)
-        res_token, res_len = struct.unpack("<qL", headers)
+        res_token, res_len = struct.unpack('<qL', headers)
         if res_token != query.token:
             self.close()
-            raise ReqlDriverError("Unexpected response received.")
+            raise ReqlDriverError('Unexpected response received.')
         res_buf = await self.read_bytes(res_len)
         return Response(res_token, res_buf, json_decoder=self.json_decoder)
 
@@ -222,7 +225,7 @@ class Connection:
         try:
             self.port = int(port)
         except ValueError:
-            raise ReqlDriverError("Could not convert port %r to an integer." % port)
+            raise ReqlDriverError('Could not convert port %r to an integer.' % port)
         self.db = db
         if 'json_encoder' in kwargs:
             self.json_encoder = kwargs.pop('json_encoder')
@@ -235,9 +238,9 @@ class Connection:
         if password is None:
             password = ''
         if auth_key is not None:
-            raise ReqlDriverError("`auth_key` is not supported")
+            raise ReqlDriverError('`auth_key` is not supported')
         if _handshake_version != 10:
-            raise ReqlDriverError("only support handshake version 1.0")
+            raise ReqlDriverError('only support handshake version 1.0')
         self._socket = SocketWrapper(
             host=self.host, port=self.port, ssl=ssl, timeout=timeout,
             user=user, password=password,
@@ -411,6 +414,3 @@ class ConnectionPool:
 
     async def put(self, conn):
         await self._queue.put(conn)
-
-
-from rethinkdb import r
