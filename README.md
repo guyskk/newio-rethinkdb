@@ -39,10 +39,11 @@ Not Support.
 from curio import run
 from curethinkdb import ConnectionPool, r, set_loop_type_curio
 
-async def main()
+async def main():
     pool = ConnectionPool(host='127.0.0.1', port=28015)
     conn = await pool.get()
     ret = await r.db("test").table_list().run(conn)
+    print(ret)
     await pool.put(conn)
 
 set_loop_type_curio()
