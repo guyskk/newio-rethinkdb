@@ -1,6 +1,0 @@
-curio==0.8
-rethinkdb==2.3.0.post6
-invoke==0.22.0
-pre-commit==1.4.1
-wheel==0.30.0
-twine==1.9.1

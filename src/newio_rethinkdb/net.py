@@ -21,8 +21,8 @@ Cursor:
 import struct
 import logging
 
-from curio import socket
-from curio.queue import Queue
+from newio import socket
+from newio.queue import Queue
 from rethinkdb import r
 from rethinkdb.net import pQuery as QueryType
 from rethinkdb.net import pResponse as ResponseType
@@ -37,9 +37,9 @@ from rethinkdb.ast import Insert, Update, Replace, Delete
 from .errors import ReqlProgrammingError
 
 
-__all__ = ('Connection', 'CurioCursor')
+__all__ = ('Connection', 'Cursor')
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def _get_consts(t):
@@ -273,12 +273,12 @@ class Connection:
 
     async def _run_query(self, query, noreply, raise_for_errors=True):
         query_noreply = 'noreply ' if noreply else ''
-        logger.debug(f'Send {query_noreply}query {query}')
+        LOG.debug(f'Send {query_noreply}query {query}')
         await self._socket.send_query(query)
         if noreply:
             return None
         res = await self._socket.read_response(query)
-        logger.debug(f'Receive response {res}')
+        LOG.debug(f'Receive response {res}')
         if res.type == ResponseType.SUCCESS_ATOM:
             data = res.data[0]
             if raise_for_errors and query.is_writing():
@@ -289,7 +289,7 @@ class Connection:
             if query.type == QueryType.CONTINUE:
                 return res
             else:
-                return CurioCursor(self, query, res)
+                return Cursor(self, query, res)
         elif res.type == ResponseType.WAIT_COMPLETE:
             return None
         elif res.type == ResponseType.SERVER_INFO:
@@ -341,7 +341,7 @@ class Connection:
         await self.close()
 
 
-class CurioCursor:
+class Cursor:
 
     def __init__(self, conn, query, res):
         self._conn = conn

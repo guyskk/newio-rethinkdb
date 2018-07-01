@@ -1,26 +1,26 @@
-# Curio + RethinkDB: Async RethinkDB driver
+# Newio + RethinkDB: Async RethinkDB driver
 
 > Work In Progress, Not Production Ready!
 
 ## Overview
 
 ```python
-from curio import run
-from curethinkdb import r, set_loop_type_curio
+from newio_kernel import run
+from newio_rethinkdb import r, set_loop_type
 
 async def main():
     conn = await r.connect('127.0.0.1', 28015)
     ret = await r.db("test").table_list().run(conn)
     print(ret)
 
-set_loop_type_curio()
+set_loop_type()
 run(main)
 ```
 
 ## Install
 
 ```
-pip install curethinkdb
+pip install newio-rethinkdb
 ```
 
 ## Document
@@ -36,8 +36,8 @@ Not Support.
 ### ConnectionPool
 
 ```python
-from curio import run
-from curethinkdb import ConnectionPool, r, set_loop_type_curio
+from newio_kernel import run
+from newio_rethinkdb import ConnectionPool, r, set_loop_type
 
 async def main():
     pool = ConnectionPool(host='127.0.0.1', port=28015)
@@ -46,7 +46,7 @@ async def main():
     print(ret)
     await pool.put(conn)
 
-set_loop_type_curio()
+set_loop_type()
 run(main)
 ```
 
