@@ -25,6 +25,7 @@ setup(
             'pytest==3.6.2',
             'pytest==cov-2.5.1',
             'newio-kernel==0.4.1',
+            'bumpversion==0.5.3',
         ]
     },
     zip_safe=False,
