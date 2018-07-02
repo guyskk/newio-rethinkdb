@@ -406,8 +406,8 @@ class ConnectionPool:
 
     async def get(self):
         if self._queue.empty() and self._current_size < self.pool_size:
-            conn = await r.connect(*self._args, **self._kwargs)
             self._current_size += 1
+            conn = await r.connect(*self._args, **self._kwargs)
             return conn
         else:
             return await self._queue.get()
