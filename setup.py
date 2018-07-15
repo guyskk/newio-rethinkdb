@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='newio-rethinkdb',
-    version='0.1.1',
+    version='0.1.2',
     keywords='newio rethinkdb async driver',
     description='Newio + RethinkDB: Async RethinkDB driver',
     long_description=__doc__,
