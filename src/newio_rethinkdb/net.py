@@ -182,10 +182,6 @@ class SocketWrapper:
         except socket.timeout as ex:
             await self.close()
             raise ReqlTimeoutError(self.host, self.port)
-        # except Exception as ex:
-        #     self.close()
-        #     raise ReqlDriverError("Could not connect to %s:%s. Error: %s" %
-        #                           (self.host, self.port, str(ex)))
 
     def is_open(self):
         return self._socket is not None
@@ -198,7 +194,7 @@ class SocketWrapper:
         headers = await self.read_bytes(12)
         res_token, res_len = struct.unpack('<qL', headers)
         if res_token != query.token:
-            self.close()
+            await self.close()
             raise ReqlDriverError('Unexpected response received.')
         res_buf = await self.read_bytes(res_len)
         return Response(res_token, res_buf, json_decoder=self.json_decoder)
@@ -220,7 +216,8 @@ def maybe_profile(value, res):
 
 class Connection:
 
-    def __init__(self, host, port, db, auth_key, user, password, timeout, ssl, _handshake_version, **kwargs):
+    def __init__(self, host, port, db, auth_key, user, password,
+                 timeout, ssl, _handshake_version, **kwargs):
         self.host = host
         try:
             self.port = int(port)
@@ -413,4 +410,7 @@ class ConnectionPool:
             return await self._queue.get()
 
     async def put(self, conn):
-        await self._queue.put(conn)
+        if conn.is_open():
+            await self._queue.put(conn)
+        else:
+            self._current_size -= 1
